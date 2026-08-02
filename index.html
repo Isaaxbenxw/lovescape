@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lovescape</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Playfair+Display:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Caveat', cursive;
+        }
+
+        /* فيديو الألعاب النارية في الخلفية */
+        .bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        /* النجوم المتساقطة */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: radial-gradient(2px 2px at 20px 30px, #fff, rgba(0,0,0,0)),
+                              radial-gradient(2px 2px at 40px 70px, #ffb6c1, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 150px 150px;
+            animation: twinkle 5s infinite linear;
+            z-index: 1;
+        }
+
+        @keyframes twinkle {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-150px); }
+        }
+
+        /* أزرار التحكم بالصوت */
+        .controls-bar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: rgba(255, 51, 102, 0.9);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Caveat', cursive;
+            font-size: 1.2rem;
+            box-shadow: 0 0 15px rgba(255, 51, 102, 0.6);
+            transition: 0.2s;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+            background: #ff1a53;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* الكارت الافتتاحي */
+        .card {
+            background: rgba(25, 25, 35, 0.9);
+            border: 2px solid #ff3366;
+            padding: 35px 45px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 51, 102, 0.6);
+            text-align: center;
+            max-width: 320px;
+        }
+
+        .card h2 {
+            margin: 0 0 10px 0;
+            color: #ffffff;
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px #ff3366;
+        }
+
+        .card p {
+            margin: 0;
+            color: #ffccdc;
+            font-size: 1.3rem;
+        }
+
+        /* حاوية صور القلب الكبير */
+        .heart-photos {
+            position: absolute;
+            display: none;
+            width: 300px;
+            height: 300px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* تم تكبير حجم الصور وإطارها بشكل واضح ومناسب */
+        .photo-item {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 16px;
+            border: 3px solid #ff3366;
+            object-fit: cover;
+            background-color: #ff1a53;
+            box-shadow: 0 0 20px rgba(255, 51, 102, 0.8);
+            transition: all 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .photo-item:hover {
+            transform: scale(1.2) !important;
+            z-index: 50;
+            box-shadow: 0 0 30px #ff3366;
+        }
+
+        /* تصميم نافذة الرسالة (Letter) */
+        .letter-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            width: 85%;
+            max-width: 600px;
+            max-height: 80vh;
+            background: rgba(18, 18, 26, 0.95);
+            border: 2px solid #ff3366;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(255, 51, 102, 0.5);
+            padding: 30px 40px;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            opacity: 0;
+            transition: all 0.5s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .letter-modal.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .letter-content {
+            overflow-y: auto;
+            max-height: 70vh;
+            padding-right: 10px;
+            color: #fce4ec;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            line-height: 1.8;
+            text-align: left;
+        }
+
+        .letter-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .letter-content::-webkit-scrollbar-thumb {
+            background: #ff3366;
+            border-radius: 10px;
+        }
+
+        .letter-content h3 {
+            font-family: 'Caveat', cursive;
+            font-size: 2.2rem;
+            color: #ff3366;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 51, 102, 0.4);
+        }
+
+        .close-letter {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #ff3366;
+            font-size: 1.8rem;
+            cursor: pointer;
+            font-family: sans-serif;
+            transition: 0.2s;
+        }
+        .close-letter:hover {
+            color: #ff1a53;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+    <video class="bg-video" autoplay muted loop>
+        <source src="fireworks.mp4" type="video/mp4">
+    </video>
+
+    <div class="stars"></div>
+
+    <div class="controls-bar">
+        <audio id="bgAudio" src="song.mp3" loop></audio>
+        <button class="action-btn" id="playPauseBtn" onclick="toggleMusic()">🎵 Play Music</button>
+    </div>
+
+    <div class="container" onclick="startExperience()">
+        <div class="card" id="cardBox">
+            <h2>My dearest Myriam ✨</h2>
+            <p>Click anywhere to open...</p>
+        </div>
+
+        <div class="heart-photos" id="heartPhotos"></div>
+    </div>
+
+    <!-- نافذة الرسالة (Letter) -->
+    <div class="letter-modal" id="letterModal">
+        <button class="close-letter" onclick="closeLetter(event)">&times;</button>
+        <div class="letter-content">
+            <h3>My dearest Myriam,</h3>
+            <p>I love you more than words could ever truly express.</p>
+            <p>I always enjoyed every moment I spent with you at school. Even the smallest conversations with you made my day brighter. I used to look forward to seeing you, and without even realizing it, I’d smile whenever you were around.</p>
+            <p>I’ll never forget our first hug, our first phone call, and all the little moments we shared together. They may have seemed ordinary to everyone else, but to me, they became some of the most beautiful memories of my life.</p>
+            <p>Your kindness, your smile, and even your shyness made you so special to me. Being with you made everything feel lighter, happier, and more meaningful. You brought a kind of peace into my life that I had never felt before.</p>
+            <p>Thank you for every smile, every laugh, every conversation, and every memory we created together. No matter where life takes us, those moments will always have a special place in my heart.</p>
+            <p>I truly hope you always find happiness, because seeing you happy has always meant so much to me.</p>
+            <p>You’ll always be someone I’ll remember with warmth, gratitude, and love.</p>
+        </div>
+    </div>
+
+    <script>
+        const audio = document.getElementById("bgAudio");
+        const playPauseBtn = document.getElementById("playPauseBtn");
+
+        function toggleMusic() {
+            if (audio.paused) {
+                audio.play().then(() => {
+                    playPauseBtn.textContent = "⏸ Pause Music";
+                }).catch(e => console.log(e));
+            } else {
+                audio.pause();
+                playPauseBtn.textContent = "🎵 Play Music";
+            }
+        }
+
+        function startExperience() {
+            audio.play().then(() => {
+                playPauseBtn.textContent = "⏸ Pause Music";
+            }).catch(e => console.log(e));
+
+            const cardBox = document.getElementById('cardBox');
+            const heartContainer = document.getElementById('heartPhotos');
+            
+            cardBox.style.display = 'none';
+            heartContainer.style.display = 'flex';
+            heartContainer.innerHTML = '';
+
+            const images = [
+                'photo1.jpg', 'photo2.jpg', 'photo3.jpg', 'photo4.jpg', 
+                'photo5.jpg', 'photo6.jpg', 'photo7.jpg', 'photo8.jpg', 
+                'photo9.jpg', 'photo10.jpg', 'photo11.jpg', 'photo12.jpg', 
+                'photo13.jpg', 'photo14.jpg'
+            ];
+            
+            const totalImages = images.length;
+
+            for (let i = 0; i < totalImages; i++) {
+                let img = document.createElement('img');
+                img.src = images[i];
+                img.className = 'photo-item';
+                
+                img.onclick = function(e) {
+                    e.stopPropagation();
+                    openLetter();
+                };
+
+                img.onerror = function() {
+                    this.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='110' height='110'><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='35'>❤️</text></svg>";
+                };
+
+                // تم زيادة مسافة التباعد هنا لتتناسب مع حجم الصور الجديد (1.8x بدلاً من 150)
+                let t = (i / totalImages) * 2 * Math.PI;
+                let x = 220 * Math.pow(Math.sin(t), 3);
+                let y = -180 * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) / 16;
+
+                img.style.transform = `translate(0px, 0px) scale(0.1)`;
+                heartContainer.appendChild(img);
+
+                setTimeout(() => {
+                    img.style.transform = `translate(${x}px, ${y}px) scale(1)`;
+                }, 50);
+            }
+        }
+
+        function openLetter() {
+            const modal = document.getElementById('letterModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+        }
+
+        function closeLetter(e) {
+            e.stopPropagation();
+            const modal = document.getElementById('letterModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
+        }
+    </script>
+</body>
+</html>
